@@ -79,12 +79,12 @@ void bar_init(PBar *bar, int ntotal, int width, int height, PBarStyle bar_style,
 static void write_pct(PBar *bar, int n) {
   float pct = (float)n/bar->ntotal;
   if( bar->pct_style == Percent )
-    fprintf(stdout, " %.2f", pct);
+    fprintf(stdout, " %.2f  ", pct);
   else if( bar->pct_style == Count )
-    fprintf(stdout, " %d / %d", n, bar->ntotal);
+    fprintf(stdout, " %d / %d  ", n, bar->ntotal);
   else if( bar->pct_style == ByteCount ) {
     print_byte_size(bar->cnt, n);
-    fprintf(stdout, " %s / %s", bar->cnt, bar->of_cnt);
+    fprintf(stdout, " %s / %s  ", bar->cnt, bar->of_cnt);
   }
 }
 
