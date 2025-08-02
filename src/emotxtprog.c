@@ -55,21 +55,22 @@ static void print_byte_size(char *s, int n) {
   sprintf(s, "%.2f %s", f, bsizes[i]);
 }
 
-void bar_init(PBar *bar, int ntotal, int width, PBarStyle bar_style, PPctStyle pct_style, PBarFlags flags) {
+void bar_init(PBar *bar, int ntotal, int width, int height, PBarStyle bar_style, PPctStyle pct_style, PBarFlags flags) {
   bar->ntotal = ntotal;
   bar->width = width;
+  bar->height = height;
   bar->n = 0;
   bar->bar_style = bar_style;
   bar->pct_style = pct_style;
   bar->flags = flags;
-  if( bar_style != Boring ) {
-    fputs("\n\n",stdout);
+  if( height > 1 ) {
+    for( int h = 0; h < height-1; ++h )
+      fputc('\n',stdout);
     fflush(stdout);
   }
   get_cursor_pos(&bar->row,&bar->col);
-  if( bar_style != Boring )
-    bar->row -= 2;
-  if( bar_style > Triple )
+  bar->row -= height-1;
+  if( bar_style != Dull )
     bar->width /= 2;
   print_byte_size(bar->of_cnt, ntotal);
   bar_update(bar,0);
@@ -97,45 +98,32 @@ struct BarChars {
 };
 
 static struct BarChars bar_chars[] = {
- { Triple,"="," ","",0,0},
- { Fire,"🔥","🌾","🏡",7,2}
+ { Dull,"="," ","",0,1},
+ { Fire,"🔥","🌾","🏡",13,2},
+ { Flood,"🌊","  ","🏖️",5,2},
+ { Cats,"😺","  ","🐟",13,2},
+ { Robot,"🤖","📄","",0,2}
 };
 
 void bar_update(PBar *bar, int n) {
   float pct = (float)n/bar->ntotal;
   float barpct = 1.0/bar->width;
   set_cursor_pos(bar->row,bar->col);
-  if( bar->bar_style == Boring ) {
+  struct BarChars *barchars = bar_chars+bar->bar_style;
+  float tickpct = barpct/bar->height;
+  for( int j = 0; j < bar->height; ++j ) {
     for( int i = 0; i < bar->width; ++i ) {
-      if( i*barpct < pct )
-        fputc('=',stdout);
+      if( i*barpct+tickpct*(i%2?bar->height-1-j:j) < pct )
+        fputs(barchars->y,stdout);
+      else if( barchars->density && (i+j*barchars->density/2) % barchars->density == 0 )
+        fputs(barchars->d,stdout);
       else
-        fputc(' ',stdout);
+        fputs(barchars->n,stdout);
     }
-    write_pct(bar,n);
-  }
-  else {
-    struct BarChars *barchars = NULL;
-    for( int i = 0; i < sizeof(bar_chars)/sizeof(bar_chars[0]); ++i )
-      if( bar_chars[i].style == bar->bar_style ) {
-        barchars = bar_chars+i;
-        break;
-      }
-    float tickpct = barpct/3.0;
-    for( int j = 0; j < 3; ++j ) {
-      for( int i = 0; i < bar->width; ++i ) {
-        if( i*barpct+tickpct*(i%2?2-j:j) < pct )
-          fputs(barchars->y,stdout);
-        else if( barchars->density && (i+j*barchars->density/2) % barchars->density == 0 )
-          fputs(barchars->d,stdout);
-        else
-          fputs(barchars->n,stdout);
-      }
-      if( j != 2 )
-        fputc('\n',stdout);
-      else
-        write_pct(bar,n);
-    }
+    if( j+1 != bar->height )
+      fputc('\n',stdout);
+    else
+      write_pct(bar,n);
   }
   fflush(stdout);
 }

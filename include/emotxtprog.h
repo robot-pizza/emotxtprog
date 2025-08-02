@@ -2,9 +2,11 @@
 #define __emotxtprog_h
 
 enum PBarStyle {
-  Boring = 0,
-  Triple = 1,
-  Fire = 2,
+  Dull = 0,
+  Fire = 1,
+  Flood = 2,
+  Cats = 3,
+  Robot = 4,
 };
 typedef enum PBarStyle PBarStyle;
 
@@ -22,7 +24,7 @@ struct PBarFlags {
 typedef struct PBarFlags PBarFlags;
 
 struct PBar {
-  int ntotal, width, n, row, col;
+  int ntotal, width, height, n, row, col;
   PBarStyle bar_style;
   PPctStyle pct_style;
   PBarFlags flags;
@@ -31,7 +33,7 @@ struct PBar {
 };
 typedef struct PBar PBar;
 
-void bar_init(PBar *bar, int ntotal, int width, PBarStyle bar_style, PPctStyle pct_style, PBarFlags flags);
+void bar_init(PBar *bar, int ntotal, int width, int height, PBarStyle bar_style, PPctStyle pct_style, PBarFlags flags);
 void bar_update(PBar *bar, int n);
 void bar_finish(PBar *bar);
 

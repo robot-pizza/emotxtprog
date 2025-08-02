@@ -13,9 +13,11 @@ struct PctStyles {
 };
 
 struct BarStyles barstyles[] = {
-  {"boring", Boring},
-  {"triple", Triple},
+  {"dull", Dull},
   {"fire", Fire},
+  {"flood", Flood},
+  {"cats", Cats},
+  {"robot", Robot},
 };
 
 struct PctStyles pctstyles[] = {
@@ -31,12 +33,15 @@ static int startswith(const char *s, const char *lead) {
 int main(int argc, char *argv[]) {
   int styleidx = 0;
   int pctidx = 0;
-  int w = 0;
+  int tmp = 0;
   int width=40;
+  int height=1;
   for( int argcidx = 1; argcidx < argc; ++argcidx ) {
     char *arg = argv[argcidx];
-    if( sscanf(arg,"--width=%d",&w) == 1 )
-      width = w;
+    if( sscanf(arg,"--width=%d",&tmp) == 1 )
+      width = tmp;
+    if( sscanf(arg,"--height=%d",&tmp) == 1 )
+      height = tmp;
     if( startswith(arg,"--barstyle=") ) {
       char *s = arg+11;
       for( int i = 0; i < sizeof(barstyles)/sizeof(barstyles[0]); ++i ) {
@@ -59,8 +64,8 @@ int main(int argc, char *argv[]) {
   PBar bar;
   PBarFlags flags;
   int n = 1000000;
-  bar_init(&bar,n,width,barstyles[styleidx].style, pctstyles[pctidx].style, flags);
-  for( int i = 1; i <= n; ++i )
+  bar_init(&bar,n,width,height,barstyles[styleidx].style, pctstyles[pctidx].style, flags);
+  for( int i = 1; i <= n; i += n/100000 )
     bar_update(&bar, i);
   bar_finish(&bar);
   return 0;
