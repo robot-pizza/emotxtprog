@@ -8,6 +8,7 @@ Easy to use.
 int main() {
   PBar bar;
   PBarFlags flags;
+  int width = 80, height = 3;
   int n = 1000000;
   bar_init(&bar,n,width,height,Fire,ByteCount,flags);
   for( int i = 1; i <= n; i += n/100000 )
