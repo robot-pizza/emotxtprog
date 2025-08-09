@@ -13,7 +13,8 @@ int main() {
   bar_init(&bar,n,width,height,Fire,ByteCount,flags);
   for( int i = 1; i <= n; i += n/100000 )
     bar_update(&bar, i);
-  bar_finish(&bar);  return 0;
+  bar_finish(&bar);
+  return 0;
 }
 ```
 
