@@ -1,4 +1,4 @@
-It's a text progress bar.  It uses emohjis when you ask it to.  Written in C.
+It's a text progress bar.  It uses emojis when you ask it to.  Written in C.
 
 Easy to use.
 
