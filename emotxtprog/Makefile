@@ -8,7 +8,7 @@ HDRS=$(wildcard ../include/*.h)
 all: tinyai
 
 tinyai: $(SRC) $(HDRS)
-	gcc $(SRC) $(CFLAGS) -lm -o test
+	gcc $(SRC) $(CFLAGS) -lm -o emotxtprog
 
 clean:
-	-@rm -f test
+	-@rm -f emotxtprog
