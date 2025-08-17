@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
   }
   PBar bar;
   int n = width*height;
-  int nsec = 10;
+  int nsec = 5;
   bar_init(&bar,n,width,height,pct_style,bar_style);
   for( int i = 1; i <= n; i += 1 ) {
     usleep(nsec*1000000/n);

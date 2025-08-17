@@ -233,7 +233,7 @@ void bar_update(PBar *bar, int n) {
 
   if( n == 0 || now - bar->last_update > 0.1 ) {
     do_flush = 1;
-    set_cursor_pos(bar->row+bar->height,bar->col+bar->width*bar_style->char_width);
+    set_cursor_pos(bar->row+bar->height-1,bar->col+bar->width*bar_style->char_width);
     float pct = (float)n/bar->ntotal;
     if( bar->pct_style == Percent )
       fprintf(stdout, " %.2f%%  ", pct*100.0);
