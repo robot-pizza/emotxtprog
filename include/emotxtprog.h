@@ -8,7 +8,7 @@ enum PBarStyle {
   Cat = 3,
   Robot = 4,
   Goat = 5,
-  Random = 7,
+  Random = 6,
   Custom = 7,
 };
 typedef enum PBarStyle PBarStyle;

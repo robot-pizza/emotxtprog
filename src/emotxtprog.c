@@ -163,14 +163,14 @@ void bar_update(PBar *bar, int n) {
       int last_col, last_row, last_i;
       if( bar_style->refill_behavior == BackgroundRefill) {
         last_i = pos2cri(bar, last_pos, &last_col, &last_row);
-        if( bar->cells[last_i] != bar_style->background ) {
+        if( last_i >= 0 && last_i < bar->width*bar->height && bar->cells[last_i] != bar_style->background ) {
           bar->cells[last_i] = NULL;
           redraw_cells = 1;
         }
       }
       ++last_pos;
       last_i = pos2cri(bar, last_pos, &last_col, &last_row);
-      if( bar->cells[last_i] != bar_style->fill ) {
+      if( last_i >= 0 && last_i < bar->width*bar->height && bar->cells[last_i] != bar_style->fill ) {
         bar->cells[last_i] = bar_style->fill;
         redraw_cells = 1;
       }
