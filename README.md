@@ -1,5 +1,7 @@
 It's a text progress bar.  It uses emojis when you ask it to.  Written in C.
 
+![pbar-opt](https://github.com/user-attachments/assets/c59d8887-1b39-4cfb-9ab2-8c835802bd21)
+
 Easy to use.
 
 ```C
@@ -40,9 +42,3 @@ enum PPctStyle {
   CountDown = 5,
 };
 ```
-
-Here's what it looks like.
-
-TODO: Put gif here
-
-
