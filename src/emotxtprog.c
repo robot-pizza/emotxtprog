@@ -143,6 +143,21 @@ static int pos2cri(PBar *bar, int pos, int *pcol, int *prow) {
   return row*bar->width+col;
 }
 
+static void update_cell(PBar *bar, int i, const char *value) {
+  if( i < 0 || i >= bar->width*bar->height || bar->cells[i] == value )
+    return;
+  int row = i/bar->width;
+  int col = i%bar->width;
+  set_cursor_pos(row,col);
+  bar->cells[i] = value;
+  set_cursor_pos(bar->row+row,bar->col+col*bar->custom_bar_style->char_width);
+  if( ! bar->cells[i] )
+    fputs(bar->custom_bar_style->background,stdout);
+  else
+    fputs(bar->cells[i],stdout);
+  fflush(stdout);
+}
+
 void bar_update(PBar *bar, int n) {
   float now = clock_time();
   if( n == 0 ) {
@@ -154,8 +169,6 @@ void bar_update(PBar *bar, int n) {
   CustomBarStyle *bar_style = bar->custom_bar_style;
   int last_pos = bar->last_pos;
   int cur_pos = last_pos;
-  int redraw_cells = (n==0);
-  int do_flush = 0;
 
   if( bar_style->fill_path == FillLeftToRight ) { 
     cur_pos = (int)floor(pct/pos_pct);
@@ -163,17 +176,11 @@ void bar_update(PBar *bar, int n) {
       int last_col, last_row, last_i;
       if( bar_style->refill_behavior == BackgroundRefill) {
         last_i = pos2cri(bar, last_pos, &last_col, &last_row);
-        if( last_i >= 0 && last_i < bar->width*bar->height && bar->cells[last_i] != bar_style->background ) {
-          bar->cells[last_i] = NULL;
-          redraw_cells = 1;
-        }
+        update_cell(bar,last_i,NULL);
       }
       ++last_pos;
       last_i = pos2cri(bar, last_pos, &last_col, &last_row);
-      if( last_i >= 0 && last_i < bar->width*bar->height && bar->cells[last_i] != bar_style->fill ) {
-        bar->cells[last_i] = bar_style->fill;
-        redraw_cells = 1;
-      }
+      update_cell(bar,last_i,bar_style->fill);
     }
     bar->last_pos = cur_pos;
   } else if( bar_style->fill_path == FillRadial ) {
@@ -205,11 +212,10 @@ void bar_update(PBar *bar, int n) {
           continue;
         if( bar->cells[fill_pos] && bar->cells[fill_pos] != bar_style->fill ) {
           if( bar_style->refill_behavior == BackgroundRefill)
-            bar->cells[bar->last_radial_pos] = NULL;
+            update_cell(bar,bar->last_radial_pos,NULL);
           bar->last_radius = radius;
           bar->last_angle = angle;
-          bar->cells[fill_pos] = bar_style->fill;
-          redraw_cells = 1;
+          update_cell(bar,fill_pos,bar_style->fill);
           bar->last_pos = cur_pos;
           bar->last_radial_pos = fill_pos;
           break;
@@ -218,8 +224,7 @@ void bar_update(PBar *bar, int n) {
     }
   }
 
-  if( redraw_cells ) {
-    do_flush = 1;
+  if( n == 0 ) {
     set_cursor_pos(bar->row,bar->col);
     for( int i = 0, n = bar->width*bar->height; i < n; ++i ) {
       if( i > 0 && i % bar->width == 0 )
@@ -231,8 +236,7 @@ void bar_update(PBar *bar, int n) {
     }
   }
 
-  if( n == 0 || now - bar->last_update > 0.1 ) {
-    do_flush = 1;
+  if( n == 0 || n == bar->ntotal || now - bar->last_update > 0.1 ) {
     set_cursor_pos(bar->row+bar->height-1,bar->col+bar->width*bar_style->char_width);
     float pct = (float)n/bar->ntotal;
     if( bar->pct_style == Percent )
@@ -264,10 +268,8 @@ void bar_update(PBar *bar, int n) {
     }
     bar->last_update = now;
     bar->last_pct = pct;
-  }
-
-  if( do_flush )
     fflush(stdout);
+  }
 }
 
 void bar_finish(PBar *bar) {
