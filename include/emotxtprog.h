@@ -35,11 +35,11 @@ enum RefillBehavior {
 };
 typedef enum RefillBehavior RefillBehavior;
 
-enum FillPath {
+enum FillRoute {
   FillLeftToRight = 0,
   FillRadial = 1,
 };
-typedef enum FillPath FillPath;
+typedef enum FillRoute FillRoute;
 
 struct CustomBarStyle {
   const char *fill;       /* Indicates progress */
@@ -47,7 +47,7 @@ struct CustomBarStyle {
   int char_width;          /* Width of each character */
   BarDecorator *decorators;
   RefillBehavior refill_behavior;
-  FillPath fill_path;
+  FillRoute fill_path;
 };
 typedef struct CustomBarStyle CustomBarStyle;
 

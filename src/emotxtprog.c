@@ -3,48 +3,64 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#ifdef _MSC_VER
+#include <windows.h>
+#else
 #include <unistd.h>
 #include <sys/ioctl.h>
 #include <termios.h>
+#endif
 #include <fcntl.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include "emotxtprog.h"
 
 void get_cursor_pos(int *row, int *col) {
-    // Make sure the terminal is in raw mode
-    struct termios oldt, newt;
-    tcgetattr(STDIN_FILENO, &oldt);
-    newt = oldt;
-    newt.c_lflag &= ~(ICANON | ECHO); // Disable canonical mode and echo
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+#ifdef _MSC_VER
+  POINT pt = {0,0};
+  GetCursorPos(&pt);
+  *col = pt.x;
+  *row = pt.y;
+  ShowCursor(FALSE);
+#else 
+  // Make sure the terminal is in raw mode
+  struct termios oldt, newt;
+  tcgetattr(STDIN_FILENO, &oldt);
+  newt = oldt;
+  newt.c_lflag &= ~(ICANON | ECHO); // Disable canonical mode and echo
+  tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 
-    // Send the escape sequence to request cursor position
-    printf("\033[6n");
-    fflush(stdout);
+  // Send the escape sequence to request cursor position
+  printf("\033[6n");
+  fflush(stdout);
 
-    // Read the response
-    char buf[32];
-    int bytesRead = read(STDIN_FILENO, buf, sizeof(buf) - 1);
-    if (bytesRead > 0) {
-        buf[bytesRead] = '\0'; // Null-terminate the string
-        // Parse the response
-        if (sscanf(buf, "\033[%d;%dR", row, col) != 2) {
-            fprintf(stderr, "Failed to get cursor position\n");
-        }
-    } else {
-        fprintf(stderr, "Failed to read cursor position\n");
-    }
-
-    // Restore the terminal settings
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-    // hide the cursor
-    printf("\033[?25l");
-    fflush(stdout);
+  // Read the response
+  char buf[32];
+  int bytesRead = read(STDIN_FILENO, buf, sizeof(buf) - 1);
+  if (bytesRead > 0) {
+      buf[bytesRead] = '\0'; // Null-terminate the string
+      // Parse the response
+      if (sscanf(buf, "\033[%d;%dR", row, col) != 2) {
+          fprintf(stderr, "Failed to get cursor position\n");
+      }
+  } else {
+      fprintf(stderr, "Failed to read cursor position\n");
+  }
+  // Restore the terminal settings
+  tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+  // hide the cursor
+  printf("\033[?25l");
+  fflush(stdout);
+#endif
 }
 
 static void set_cursor_pos(int row, int col) {
+#ifdef _MSC_VER
+  SetCursorPos(col,row);
+#else 
   fprintf(stdout,"\033[%d;%dH", row, col);
   fflush(stdout);
+#endif
 }
 
 static const char *bsizes[] = {"b","KiB","MiB","GiB","TiB","XiB"};
@@ -127,10 +143,22 @@ void bar_init_custom(PBar *bar, int ntotal, int width, int height, PPctStyle pct
   bar_init0(bar,ntotal,width,height,pct_style,Custom,custom_bar_style);
 }
 
+#ifdef _MSC_VER
+static LARGE_INTEGER perf_freq = {.QuadPart = 0};
+#endif
+
 static float clock_time() {
+#ifdef _MSC_VER
+  LARGE_INTEGER ticks;
+  QueryPerformanceCounter(&ticks);
+  if( perf_freq.QuadPart == 0 )
+    QueryPerformanceFrequency(&perf_freq);
+  return (double)ticks.QuadPart / (double)perf_freq.QuadPart;
+#else
   struct timespec now;
   clock_gettime(CLOCK_MONOTONIC,&now);
   return now.tv_sec + now.tv_nsec / 1e9;
+#endif
 }
 
 static int pos2cri(PBar *bar, int pos, int *pcol, int *prow) {
@@ -275,8 +303,12 @@ void bar_update(PBar *bar, int n) {
 void bar_finish(PBar *bar) {
   bar_update(bar,bar->ntotal);
   fputc('\n',stdout);
+#ifdef MSC_VER
+  ShowCursor(TRUE);
+#else
   // show the cursor
   printf("\033[?25h");
+#endif
   fflush(stdout);
 }
 

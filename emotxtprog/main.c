@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 
 struct BarStyles {
   char *name;
@@ -19,9 +21,9 @@ struct RefillBehaviors {
   RefillBehavior behavior;
 };
 
-struct FillPaths {
+struct FillRoutes {
   char *name;
-  FillPath path;
+  FillRoute path;
 };
 
 struct BarStyles barstyles[] = {
@@ -49,7 +51,7 @@ struct RefillBehaviors refill_behaviors[] = {
   {"background-refill", BackgroundRefill},
 };
 
-struct FillPaths fill_paths[] = {
+struct FillRoutes fill_paths[] = {
   {"left-to-right", FillLeftToRight},
   {"radial", FillRadial},
 };
@@ -76,7 +78,7 @@ int main(int argc, char *argv[]) {
   PBarStyle bar_style = Dull;
   PPctStyle pct_style = None;
   RefillBehavior refill_behavior = NoRefill;
-  FillPath fill_path = FillLeftToRight;
+  FillRoute fill_path = FillLeftToRight;
   int tmp = 0;
   int width=40;
   int height=1;
@@ -132,7 +134,11 @@ int main(int argc, char *argv[]) {
   int nsec = 5;
   bar_init(&bar,n,width,height,pct_style,bar_style);
   for( int i = 1; i <= n; i += 1 ) {
+#ifdef _MSC_VER
+    Sleep(nsec*1000/n);
+#else
     usleep(nsec*1000000/n);
+#endif
     bar_update(&bar, i);
   }
   bar_finish(&bar);
