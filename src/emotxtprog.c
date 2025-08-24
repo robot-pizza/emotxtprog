@@ -65,7 +65,6 @@ static void set_cursor_pos(int row, int col) {
   HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
   COORD coord = {col,row};
   SetConsoleCursorPosition(hConsole,coord);
-  SetConsoleOutputCP(CP_UTF8);
 #else 
   fprintf(stdout,"\033[%d;%dH", row, col);
   fflush(stdout);
@@ -100,6 +99,9 @@ static CustomBarStyle canned_bar_styles[] = {
 };
 
 static void bar_init0(PBar *bar, int ntotal, int width, int height, PPctStyle pct_style, PBarStyle bar_style, CustomBarStyle *custom_bar_style) {
+#ifdef _MSC_VER
+  SetConsoleOutputCP(CP_UTF8);
+#endif
   bar->ntotal = ntotal;
   bar->width = width;
   bar->height = height;
