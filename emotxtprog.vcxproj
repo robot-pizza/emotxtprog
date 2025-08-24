@@ -66,9 +66,9 @@
     <NMakeOutput>emotxtprog.exe</NMakeOutput>
     <NMakePreprocessorDefinitions>_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <NMakeBuildCommandLine>cd emotxtprog 
-nmake all</NMakeBuildCommandLine>
+nmake all /D DEBUG=1</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>cd emotxtprog 
-nmake clean all</NMakeReBuildCommandLine>
+nmake clean all /D DEBUG=1</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>cd emotxtprog 
 nmake clean</NMakeCleanCommandLine>
     <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);include</IncludePath>

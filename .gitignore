@@ -1,4 +1,6 @@
 *.exe
 *.obj
+*.ilk
+*.pdb
 .vs
 emotxtprog/x64

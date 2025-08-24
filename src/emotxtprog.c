@@ -17,11 +17,17 @@
 
 void get_cursor_pos(int *row, int *col) {
 #ifdef _MSC_VER
-  POINT pt = {0,0};
-  GetCursorPos(&pt);
-  *col = pt.x;
-  *row = pt.y;
-  ShowCursor(FALSE);
+  HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+  CONSOLE_SCREEN_BUFFER_INFO csbi;
+  GetConsoleScreenBufferInfo(hConsole, &csbi);
+  COORD cursorPos = csbi.dwCursorPosition;
+  *col = cursorPos.X;
+  *row = cursorPos.Y;
+  CONSOLE_CURSOR_INFO info;
+  info.dwSize = sizeof(info);
+  GetConsoleCursorInfo(hConsole,&info);
+  info.bVisible = FALSE;
+  SetConsoleCursorInfo(hConsole,&info);
 #else 
   // Make sure the terminal is in raw mode
   struct termios oldt, newt;
@@ -56,7 +62,10 @@ void get_cursor_pos(int *row, int *col) {
 
 static void set_cursor_pos(int row, int col) {
 #ifdef _MSC_VER
-  SetCursorPos(col,row);
+  HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+  COORD coord = {col,row};
+  SetConsoleCursorPosition(hConsole,coord);
+  SetConsoleOutputCP(CP_UTF8);
 #else 
   fprintf(stdout,"\033[%d;%dH", row, col);
   fflush(stdout);
@@ -304,7 +313,11 @@ void bar_finish(PBar *bar) {
   bar_update(bar,bar->ntotal);
   fputc('\n',stdout);
 #ifdef MSC_VER
-  ShowCursor(TRUE);
+  CONSOLE_CURSOR_INFO info;
+  info.dwSize = sizeof(info);
+  GetConsoleCursorInfo(hConsole,&info);
+  info.bVisible = FALSE;
+  SetConsoleCursorInfo(hConsole,&info);
 #else
   // show the cursor
   printf("\033[?25h");

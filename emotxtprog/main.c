@@ -64,7 +64,7 @@ static void print_help() {
   fputs("emotxtprog\n"
         "    [--width=WIDTH]\n"
         "    [--height=HEIGHT]\n"
-        "    [--bar-style=dull|fire|flood|cats|robot|goat|random|custom]\n"
+        "    [--bar-style=dull|fire|flood|cat|robot|goat|random|custom]\n"
         "    [--pct-style=none|percent|count|byte-count|time|count-down]\n"
         "    [--refill-behavior=no-refill|background-refill]\n"
         "    [--fill-path=left-to-right|radial]\n"
