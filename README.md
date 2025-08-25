@@ -5,6 +5,8 @@ It's a text progress bar.  It uses emojis when you ask it to.  Written in C. Win
 By command line
 
 ```bash
+emotxtprog --width=80 --pct-style=count-down --count=10 --increment=time
+
 ./myprog.py | emotxtprog --width=80 --height=3 --pct-style=percent --bar-style=goat --count=1000 --increment=byte
 ```
 
