@@ -1,6 +1,6 @@
 Linux: Build with make
 
-``bash
+```bash
 cd emotxtprog
 make
 ```
