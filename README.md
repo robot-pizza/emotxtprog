@@ -2,7 +2,15 @@ It's a text progress bar.  It uses emojis when you ask it to.  Written in C.
 
 ![pbar-opt](https://github.com/user-attachments/assets/c59d8887-1b39-4cfb-9ab2-8c835802bd21)
 
-Easy to use.
+* Windows or Linux
+
+By command line
+
+```bash
+./myprog.py | emotxtprog --width=80 --height=3 --pct-style=percent --bar-style=goat --count=1000 --increment=byte
+```
+
+By Code
 
 ```C
 #include "emotxtprog.h"
@@ -19,7 +27,7 @@ int main() {
 }
 ```
 
-Different Options
+Various Options
 
 ```C
 enum PBarStyle {
