@@ -66,6 +66,7 @@ struct PBar {
   int radial_center, last_radial_pos;
   int last_radius;
   float last_angle;
+  int last_n;
 };
 typedef struct PBar PBar;
 

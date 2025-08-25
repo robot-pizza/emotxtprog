@@ -109,6 +109,7 @@ static void bar_init0(PBar *bar, int ntotal, int width, int height, PPctStyle pc
   bar->bar_style = bar_style;
   bar->custom_bar_style = custom_bar_style;
   bar->pct_style = pct_style;
+  bar->last_n = -1;
   if( height > 1 ) {
     for( int h = 0; h < height-1; ++h )
       fputc('\n',stdout);
@@ -199,7 +200,7 @@ static void update_cell(PBar *bar, int i, const char *value) {
 
 void bar_update(PBar *bar, int n) {
   float now = clock_time();
-  if( n == 0 ) {
+  if( bar->last_n == -1 ) {
     bar->start_time = now;
     bar->last_update = now;
   }
@@ -263,7 +264,7 @@ void bar_update(PBar *bar, int n) {
     }
   }
 
-  if( n == 0 ) {
+  if( bar->last_n == 0 ) {
     set_cursor_pos(bar->row,bar->col);
     for( int i = 0, n = bar->width*bar->height; i < n; ++i ) {
       if( i > 0 && i % bar->width == 0 )
@@ -275,7 +276,7 @@ void bar_update(PBar *bar, int n) {
     }
   }
 
-  if( n == 0 || n == bar->ntotal || now - bar->last_update > 0.1 ) {
+  if( bar->last_n == 0 || n == bar->ntotal || now - bar->last_update > 0.1 ) {
     set_cursor_pos(bar->row+bar->height-1,bar->col+bar->width*bar_style->char_width);
     float pct = (float)n/bar->ntotal;
     if( bar->pct_style == Percent )
@@ -309,10 +310,12 @@ void bar_update(PBar *bar, int n) {
     bar->last_pct = pct;
     fflush(stdout);
   }
+  bar->last_n = n >= 0 ? n : 0;
 }
 
 void bar_finish(PBar *bar) {
-  bar_update(bar,bar->ntotal);
+  bar->last_update = 0;
+  bar_update(bar, bar->last_n);
   fputc('\n',stdout);
 #ifdef MSC_VER
   CONSOLE_CURSOR_INFO info;
