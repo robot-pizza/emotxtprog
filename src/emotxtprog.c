@@ -159,7 +159,7 @@ void bar_init_custom(PBar *bar, int ntotal, int width, int height, PPctStyle pct
 static LARGE_INTEGER perf_freq = {.QuadPart = 0};
 #endif
 
-static float clock_time() {
+float clock_time() {
 #ifdef _MSC_VER
   LARGE_INTEGER ticks;
   QueryPerformanceCounter(&ticks);
@@ -198,7 +198,7 @@ static void update_cell(PBar *bar, int i, const char *value) {
   fflush(stdout);
 }
 
-void bar_update(PBar *bar, int n) {
+void bar_update(PBar *bar, float n) {
   float now = clock_time();
   if( bar->last_n == -1 ) {
     bar->start_time = now;
@@ -264,7 +264,7 @@ void bar_update(PBar *bar, int n) {
     }
   }
 
-  if( bar->last_n == 0 ) {
+  if( bar->last_n == -1 ) {
     set_cursor_pos(bar->row,bar->col);
     for( int i = 0, n = bar->width*bar->height; i < n; ++i ) {
       if( i > 0 && i % bar->width == 0 )
@@ -282,7 +282,7 @@ void bar_update(PBar *bar, int n) {
     if( bar->pct_style == Percent )
       fprintf(stdout, " %.2f%%  ", pct*100.0);
     else if( bar->pct_style == Count )
-      fprintf(stdout, " %d / %d  ", n, bar->ntotal);
+      fprintf(stdout, " %d / %d  ", (int)n, bar->ntotal);
     else if( bar->pct_style == ByteCount ) {
       print_byte_size(bar->cnt, n);
       fprintf(stdout, " %s / %s  ", bar->cnt, bar->of_cnt);

@@ -66,13 +66,15 @@ struct PBar {
   int radial_center, last_radial_pos;
   int last_radius;
   float last_angle;
-  int last_n;
+  float last_n;
 };
 typedef struct PBar PBar;
 
 void bar_init(PBar *bar, int ntotal, int width, int height, PPctStyle pct_style, PBarStyle bar_style);
 void bar_init_custom(PBar *bar, int ntotal, int width, int height, PPctStyle pct_style, CustomBarStyle *custom_bar_style);
-void bar_update(PBar *bar, int n);
+void bar_update(PBar *bar, float n);
 void bar_finish(PBar *bar);
+
+float clock_time();
 
 #endif // __emotxtprog_h

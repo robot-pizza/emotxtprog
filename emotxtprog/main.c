@@ -85,7 +85,7 @@ static void print_help() {
         "    [--bar-style=dull|fire|flood|cat|robot|goat|random|custom]\n"
         "    [--pct-style=none|percent|count|byte-count|time|count-down]\n"
         "    [--count=COUNT]\n"
-        "    [--increment=line|byte|seconds]\n"
+        "    [--increment=line|byte|time]\n"
 #if 0
         "    [--refill-behavior=no-refill|background-refill]\n"
         "    [--fill-path=left-to-right|radial]\n"
@@ -172,13 +172,19 @@ int main(int argc, char *argv[]) {
   bar_init(&bar,count,width,height,pct_style,bar_style);
   if( increment == IncrementTime ) {
     int n = width*height;
+    float start = clock_time();
+    float incr = (float)count/n;
     for( int i = 1; i <= n; i += 1 ) {
+      float now = clock_time();
+      float wait = (i*incr)-(now-start);
+      if( wait > 0.0 ) {
 #ifdef _MSC_VER
-      Sleep(count*1000/n);
+        Sleep((int)(wait*1000));
 #else
-      usleep(count*1000000/n);
+        usleep(wait*1000000);
 #endif
-      bar_update(&bar, count*i/n);
+      }
+      bar_update(&bar, (double)count*i/n);
     }
   } else {
     int c = -1;
