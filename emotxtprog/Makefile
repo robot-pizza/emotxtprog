@@ -1,5 +1,5 @@
 # someone clever noticed nmake doesn't do line continuation.
-# thus, you can do it in one make file, no need for cmake.
+# thus, you can do it in one Makefile, no need for cmake.
 # NMAKE code here \
 !MESSAGE Using NMAKE # \
 !ifndef 0 # \
