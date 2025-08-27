@@ -91,12 +91,14 @@ static BarDecorator fire_decorators[] = {
   {NULL}};
 static BarDrop umbrella_drops[] = {
   {"🛟",0.10},
-  {"💀",0.05},
+  {NULL}};
+static BarDrop sand_drops[] = {
+  {"🐚",0.5},
   {NULL}};
 static BarDecorator flood_decorators[] = {
   {"🏖️",0.05,umbrella_drops},
-  {"🪣",0.01,NULL},
-  {"🏰",0.01,NULL},
+  {"🪣",0.01,sand_drops},
+  {"🏰",0.01,sand_drops},
   {NULL}};
 static BarDrop fish_drops[] = {
   {"🍣",0.05},
@@ -111,15 +113,21 @@ static BarDecorator cat_decorators[] = {
   {"🦎",0.05,NULL},
   {"🍲",0.01,NULL},
   {NULL}};
+static BarDrop paper_drops[] = {
+  {"🧻",0.01},
+  {NULL}};
+static BarDrop power_drops[] = {
+  {"🗲 ",0.01},
+  {NULL}};
 static BarDecorator robot_decorators[] = {
-  {"📄",0.2,NULL},
-  {"🔋",0.6,NULL},
+  {"📄",0.2,paper_drops},
+  {"🔋",0.6,power_drops},
   {NULL}};
 static BarDrop sock_drops[] = {
   {"🧶",0.25},
   {NULL}};
 static BarDrop shrub_drops[] = {
-  {"💩",0.01},
+  {"💩",0.005},
   {NULL}};
 static BarDecorator goat_decorators[] = {
   {"🪴",0.01,NULL},
