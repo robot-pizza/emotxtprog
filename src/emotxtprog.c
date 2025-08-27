@@ -83,11 +83,20 @@ static void print_byte_size(char *s, int n) {
   sprintf(s, "%.2f %s", f, bsizes[i]);
 }
 
+static BarDrop animal_drops[] = {
+  {"🦴",0.1},
+  {NULL}};
+static BarDrop house_drops[] = {
+  {"🏚️",0.05},
+  {NULL}};
+static BarDrop tractor_drops[] = {
+  {"🚒",0.05},
+  {NULL}};
 static BarDecorator fire_decorators[] = {
-  {"🏡",0.03,NULL},
-  {"🚜",0.01,NULL},
-  {"🐄",0.006,NULL},
-  {"🐐",0.003,NULL},
+  {"🏡",0.03,house_drops},
+  {"🚜",0.01,tractor_drops},
+  {"🐄",0.006,animal_drops},
+  {"🐐",0.003,animal_drops},
   {NULL}};
 static BarDrop umbrella_drops[] = {
   {"🛟",0.10},
