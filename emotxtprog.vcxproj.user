@@ -6,6 +6,6 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerCommand>$(ProjectDir)emotxtprog\emotxtprog.exe</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments> --width=80 --height=10 --pct-style=count-down --increment=time --count=10 --bar-style=fire</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments> --width=80 --height=10 --pct-style=count-down --increment=time --count=10 --bar-style=goat</LocalDebuggerCommandArguments>
   </PropertyGroup>
 </Project>

@@ -160,6 +160,7 @@ static void bar_init0(PBar *bar, int ntotal, int width, int height, PPctStyle pc
     bar->width /= custom_bar_style->char_width;
   print_byte_size(bar->of_cnt, ntotal);
   bar->cells = malloc(sizeof(char*)*bar->width*bar->height);
+  bar->last_value = 0;
   for( int i = 0; i < bar->width*bar->height; ++i ) {
     bar->cells[i] = custom_bar_style->background;
     for( BarDecorator *decorator = custom_bar_style->decorators; decorator && decorator->decorator; ++decorator ) {
@@ -237,8 +238,7 @@ static void update_cell(PBar *bar, int i, const char *value) {
   fflush(stdout);
 }
 
-static const char *get_drop(PBar *bar, int i) {
-  const char *last_value = bar->cells[i];
+static const char *get_drop(PBar *bar, const char *last_value) {
   if( ! last_value )
     return NULL;
   CustomBarStyle *bar_style = bar->custom_bar_style;
@@ -271,13 +271,14 @@ void bar_update(PBar *bar, float n) {
     while( last_pos < cur_pos ) {
       int last_col, last_row, last_i;
       last_i = pos2cri(bar, last_pos, &last_col, &last_row);
-      const char *drop = get_drop(bar,last_i);
+      const char *drop = get_drop(bar,bar->last_value);
       if( drop )
         update_cell(bar,last_i,drop);
       else if( bar_style->refill_behavior == BackgroundRefill)
         update_cell(bar,last_i,NULL);
       ++last_pos;
       last_i = pos2cri(bar, last_pos, &last_col, &last_row);
+      bar->last_value = bar->cells[last_i];
       update_cell(bar,last_i,bar_style->fill);
     }
     bar->last_pos = cur_pos;
@@ -309,13 +310,14 @@ void bar_update(PBar *bar, float n) {
         if( fill_pos == bar->last_radial_pos )
           continue;
         if( bar->cells[fill_pos] && bar->cells[fill_pos] != bar_style->fill ) {
-          const char *drop = get_drop(bar,bar->last_radial_pos);
+          const char *drop = get_drop(bar,bar->last_value);
           if( drop )
             update_cell(bar,bar->last_radial_pos,drop);
           else if( bar_style->refill_behavior == BackgroundRefill)
             update_cell(bar,bar->last_radial_pos,NULL);
           bar->last_radius = radius;
           bar->last_angle = angle;
+          bar->last_value = bar->cells[fill_pos];
           update_cell(bar,fill_pos,bar_style->fill);
           bar->last_pos = cur_pos;
           bar->last_radial_pos = fill_pos;

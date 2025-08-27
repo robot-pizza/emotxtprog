@@ -64,6 +64,7 @@ struct PBar {
   PPctStyle pct_style;
   CustomBarStyle *custom_bar_style;
   const char **cells;
+  const char *last_value;
   char cnt[20];
   char of_cnt[20];
   float last_pct;
