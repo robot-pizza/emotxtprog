@@ -83,11 +83,50 @@ static void print_byte_size(char *s, int n) {
   sprintf(s, "%.2f %s", f, bsizes[i]);
 }
 
-static BarDecorator fire_decorators[] = {{"🏡",0.03},{"🚜",0.01},{"🐄",0.006},{"🐐",0.003},{NULL}};
-static BarDecorator flood_decorators[] = {{"🏖️",0.05},{"🪣",0.01},{"🏰",0.01},{NULL}};
-static BarDecorator cat_decorators[] = {{"🐟",0.05},{"🐠",0.05},{"🍣",0.01},{"🐦",0.05},{"🦎",0.05},{"🍲",0.01},{NULL}};
-static BarDecorator robot_decorators[] = {{"📄",0.2},{"🔋",0.6},{NULL}};
-static BarDecorator goat_decorators[] = {{"🪴",0.01},{"🧦",0.01},{"🍕",0.005},{"🌿",1.0},{NULL}};
+static BarDecorator fire_decorators[] = {
+  {"🏡",0.03,NULL},
+  {"🚜",0.01,NULL},
+  {"🐄",0.006,NULL},
+  {"🐐",0.003,NULL},
+  {NULL}};
+static BarDrop umbrella_drops[] = {
+  {"🛟",0.10},
+  {"💀",0.05},
+  {NULL}};
+static BarDecorator flood_decorators[] = {
+  {"🏖️",0.05,umbrella_drops},
+  {"🪣",0.01,NULL},
+  {"🏰",0.01,NULL},
+  {NULL}};
+static BarDrop fish_drops[] = {
+  {"🍣",0.05},
+  {NULL}};
+static BarDrop bird_drops[] = {
+  {"🍗",0.05},
+  {NULL}};
+static BarDecorator cat_decorators[] = {
+  {"🐟",0.05,fish_drops},
+  {"🐠",0.05,fish_drops},
+  {"🐦",0.05,bird_drops},
+  {"🦎",0.05,NULL},
+  {"🍲",0.01,NULL},
+  {NULL}};
+static BarDecorator robot_decorators[] = {
+  {"📄",0.2,NULL},
+  {"🔋",0.6,NULL},
+  {NULL}};
+static BarDrop sock_drops[] = {
+  {"🧶",0.25},
+  {NULL}};
+static BarDrop shrub_drops[] = {
+  {"💩",0.01},
+  {NULL}};
+static BarDecorator goat_decorators[] = {
+  {"🪴",0.01,NULL},
+  {"🧦",0.01,sock_drops},
+  {"🍕",0.005,NULL},
+  {"🌿",1.0,shrub_drops},
+  {NULL}};
 
 static CustomBarStyle canned_bar_styles[] = {
  /* Dull */ {"="," ",1,NULL,NoRefill,FillLeftToRight},
@@ -198,6 +237,23 @@ static void update_cell(PBar *bar, int i, const char *value) {
   fflush(stdout);
 }
 
+static const char *get_drop(PBar *bar, int i) {
+  const char *last_value = bar->cells[i];
+  if( ! last_value )
+    return NULL;
+  CustomBarStyle *bar_style = bar->custom_bar_style;
+  for( BarDecorator *decorator = bar_style->decorators; decorator && decorator->decorator; ++decorator ) {
+    if( decorator->decorator != last_value )
+      continue;
+    for( BarDrop *drop = decorator->drops; drop && drop->drop; ++drop ) {
+      if( rand()/(float)RAND_MAX <= drop->likelyhood )
+        return drop->drop;
+    }
+    break;
+  }
+  return NULL;
+}
+
 void bar_update(PBar *bar, float n) {
   float now = clock_time();
   if( bar->last_n == -1 ) {
@@ -214,10 +270,12 @@ void bar_update(PBar *bar, float n) {
     cur_pos = (int)floor(pct/pos_pct);
     while( last_pos < cur_pos ) {
       int last_col, last_row, last_i;
-      if( bar_style->refill_behavior == BackgroundRefill) {
-        last_i = pos2cri(bar, last_pos, &last_col, &last_row);
+      last_i = pos2cri(bar, last_pos, &last_col, &last_row);
+      const char *drop = get_drop(bar,last_i);
+      if( drop )
+        update_cell(bar,last_i,drop);
+      else if( bar_style->refill_behavior == BackgroundRefill)
         update_cell(bar,last_i,NULL);
-      }
       ++last_pos;
       last_i = pos2cri(bar, last_pos, &last_col, &last_row);
       update_cell(bar,last_i,bar_style->fill);
@@ -251,7 +309,10 @@ void bar_update(PBar *bar, float n) {
         if( fill_pos == bar->last_radial_pos )
           continue;
         if( bar->cells[fill_pos] && bar->cells[fill_pos] != bar_style->fill ) {
-          if( bar_style->refill_behavior == BackgroundRefill)
+          const char *drop = get_drop(bar,bar->last_radial_pos);
+          if( drop )
+            update_cell(bar,bar->last_radial_pos,drop);
+          else if( bar_style->refill_behavior == BackgroundRefill)
             update_cell(bar,bar->last_radial_pos,NULL);
           bar->last_radius = radius;
           bar->last_angle = angle;

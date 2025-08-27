@@ -23,9 +23,16 @@ enum PPctStyle {
 };
 typedef enum PPctStyle PPctStyle;
 
+struct BarDrop {
+  const char *drop;   /* drop character */
+  float likelyhood;   /* 0.0 through 1.0 */
+};
+typedef struct BarDrop BarDrop;
+
 struct BarDecorator {
   const char *decorator;   /* decorator character */
   float density;           /* 0.0 through 1.0 */
+  BarDrop *drops;
 };
 typedef struct BarDecorator BarDecorator;
 
