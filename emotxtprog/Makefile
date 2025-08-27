@@ -26,13 +26,13 @@ MV=mv -f
 RM=rm -f
 CP=cp -f
 CC_OUT=-o
-CFLAGS=-I ./ -I ../include
-if DEBUG
+CFLAGS=-lm -std=gnu99 -I ./ -I ../include
+ifdef DEBUG
 ##When debugging using drmemory or termdbg
-CFLAGS+=-g -gdwarf-4 -fno-inline -fno-omit-frame-pointer -std=gnu99
+CFLAGS+= -g -gdwarf-4 -fno-inline -fno-omit-frame-pointer
 else
 ##Optimized build
-CFLAGS+= -O3 -std=gnu99 -lm
+CFLAGS+= -O3
 endif
 SRC=$(wildcard ../src/*.c) main.c
 HDRS=$(wildcard ../include/*.h)

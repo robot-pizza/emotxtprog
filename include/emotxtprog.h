@@ -23,9 +23,16 @@ enum PPctStyle {
 };
 typedef enum PPctStyle PPctStyle;
 
+struct BarDrop {
+  const char *drop;   /* drop character */
+  float likelyhood;   /* 0.0 through 1.0 */
+};
+typedef struct BarDrop BarDrop;
+
 struct BarDecorator {
   const char *decorator;   /* decorator character */
   float density;           /* 0.0 through 1.0 */
+  BarDrop *drops;
 };
 typedef struct BarDecorator BarDecorator;
 
@@ -57,6 +64,7 @@ struct PBar {
   PPctStyle pct_style;
   CustomBarStyle *custom_bar_style;
   const char **cells;
+  const char *last_value;
   char cnt[20];
   char of_cnt[20];
   float last_pct;

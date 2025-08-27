@@ -63,7 +63,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <NMakeOutput>emotxtprog.exe</NMakeOutput>
+    <NMakeOutput>emotxtprog\emotxtprog.exe</NMakeOutput>
     <NMakePreprocessorDefinitions>_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <NMakeBuildCommandLine>cd emotxtprog 
 nmake all /D DEBUG=1</NMakeBuildCommandLine>
