@@ -98,7 +98,8 @@ static void print_help() {
 
 int main(int argc, char *argv[]) {
   PBarStyle bar_style = Dull;
-  PPctStyle pct_style = None;
+  PPctStyle pct_style[MAX_N_PCT] = {None};
+  int npct = 0;
 #if 0
   RefillBehavior refill_behavior = NoRefill;
   FillRoute fill_path = FillLeftToRight;
@@ -134,7 +135,7 @@ int main(int argc, char *argv[]) {
       for( int i = 0; i < sizeof(pctstyles)/sizeof(pctstyles[0]); ++i ) {
         if( strcmp(pctstyles[i].name,s) != 0 )
           continue;
-        pct_style = pctstyles[i].style;
+        pct_style[npct++] = pctstyles[i].style;
         break;
       }
     }
@@ -169,7 +170,7 @@ int main(int argc, char *argv[]) {
     }
   }
   PBar bar;
-  bar_init(&bar,count,width,height,pct_style,bar_style);
+  bar_init(&bar,count,width,height,npct,pct_style,bar_style);
   if( increment == IncrementTime ) {
     int n = width*height;
     float start = clock_time();

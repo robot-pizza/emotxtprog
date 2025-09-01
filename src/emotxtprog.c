@@ -73,14 +73,14 @@ static void set_cursor_pos(int row, int col) {
 
 static const char *bsizes[] = {"b","KiB","MiB","GiB","TiB","XiB"};
 
-static void print_byte_size(char *s, int n) {
+static void print_byte_size(FILE *fp, int n) {
   int i = 0;
   float f = (float)n;
   while( f > 1024.0 ) {
     f /= 1024.0;
     ++i;
   }
-  sprintf(s, "%.2f %s", f, bsizes[i]);
+  fprintf(fp, "%.2f %s", f, bsizes[i]);
 }
 
 static BarDrop animal_drops[] = {
@@ -154,7 +154,14 @@ static CustomBarStyle canned_bar_styles[] = {
  /* Goat */ {"🐐","  ",2,goat_decorators,BackgroundRefill,FillRadial},
 };
 
-static void bar_init0(PBar *bar, int ntotal, int width, int height, PPctStyle pct_style, PBarStyle bar_style, CustomBarStyle *custom_bar_style) {
+static void bar_init0(PBar *bar,
+                      int ntotal,
+                      int width,
+                      int height,
+                      int npct,
+                      PPctStyle pct_style[MAX_N_PCT],
+                      PBarStyle bar_style,
+                      CustomBarStyle *custom_bar_style) {
 #ifdef _MSC_VER
   SetConsoleOutputCP(CP_UTF8);
 #endif
@@ -164,7 +171,14 @@ static void bar_init0(PBar *bar, int ntotal, int width, int height, PPctStyle pc
   bar->n = 0;
   bar->bar_style = bar_style;
   bar->custom_bar_style = custom_bar_style;
-  bar->pct_style = pct_style;
+  for( int i = 0; i < MAX_N_PCT; ++i ) {
+    if( i < npct || i < (height-1) )
+      bar->pct[i].pct_style = pct_style[i];
+    else
+      bar->pct[i].pct_style = None;
+    bar->pct[i].last_pct = 0.0;
+    bar->pct[i].last_update = 0.0;
+  }
   bar->last_n = -1;
   if( height > 1 ) {
     for( int h = 0; h < height-1; ++h )
@@ -175,8 +189,9 @@ static void bar_init0(PBar *bar, int ntotal, int width, int height, PPctStyle pc
   bar->row -= height-1;
   if( custom_bar_style->char_width > 1 )
     bar->width /= custom_bar_style->char_width;
-  print_byte_size(bar->of_cnt, ntotal);
   bar->cells = malloc(sizeof(char*)*bar->width*bar->height);
+  bar->cellflags = malloc(bar->width*bar->height);
+  memset(bar->cellflags,0,bar->width*bar->height);
   bar->last_value = 0;
   for( int i = 0; i < bar->width*bar->height; ++i ) {
     bar->cells[i] = custom_bar_style->background;
@@ -194,22 +209,32 @@ static void bar_init0(PBar *bar, int ntotal, int width, int height, PPctStyle pc
   bar->last_angle = 0.0;
   bar->last_pos = 0;
   bar->cells[fill_pos] = custom_bar_style->fill;
-  bar->last_pct = 0.0;
-  bar->last_update = 0.0;
   bar_update(bar,0);
 }
 
-void bar_init(PBar *bar, int ntotal, int width, int height, PPctStyle pct_style, PBarStyle bar_style) {
+void bar_init(PBar *bar,
+              int ntotal,
+              int width, 
+              int height,
+              int npct,
+              PPctStyle pct_style[MAX_N_PCT],
+              PBarStyle bar_style) {
   srand(time(NULL));
   if( bar_style == Custom )
     bar_style = Random;
   if( bar_style == Random )
     bar_style = rand()%Random;
-  bar_init0(bar,ntotal,width,height,pct_style,bar_style,canned_bar_styles+bar_style);
+  bar_init0(bar,ntotal,width,height,npct,pct_style,bar_style,canned_bar_styles+bar_style);
 }
 
-void bar_init_custom(PBar *bar, int ntotal, int width, int height, PPctStyle pct_style, CustomBarStyle *custom_bar_style) {
-  bar_init0(bar,ntotal,width,height,pct_style,Custom,custom_bar_style);
+void bar_init_custom(PBar *bar,
+                     int ntotal,
+                     int width,
+                     int height,
+                     int npct,
+                     PPctStyle pct_style[MAX_N_PCT],
+                     CustomBarStyle *custom_bar_style) {
+  bar_init0(bar,ntotal,width,height,npct,pct_style,Custom,custom_bar_style);
 }
 
 #ifdef _MSC_VER
@@ -273,10 +298,6 @@ static const char *get_drop(PBar *bar, const char *last_value) {
 
 void bar_update(PBar *bar, float n) {
   float now = clock_time();
-  if( bar->last_n == -1 ) {
-    bar->start_time = now;
-    bar->last_update = now;
-  }
   float pct = (float)n/bar->ntotal;
   float pos_pct = 1.0/bar->width/bar->height;
   CustomBarStyle *bar_style = bar->custom_bar_style;
@@ -326,7 +347,8 @@ void bar_update(PBar *bar, float n) {
         fill_pos = test_row*bar->width+test_col;
         if( fill_pos == bar->last_radial_pos )
           continue;
-        if( bar->cells[fill_pos] && bar->cells[fill_pos] != bar_style->fill ) {
+        if( bar->cellflags[fill_pos] == 0 ) {
+          bar->cellflags[fill_pos] = 1;
           const char *drop = get_drop(bar,bar->last_value);
           if( drop )
             update_cell(bar,bar->last_radial_pos,drop);
@@ -345,6 +367,7 @@ void bar_update(PBar *bar, float n) {
   }
 
   if( bar->last_n == -1 ) {
+    bar->start_time = now;
     set_cursor_pos(bar->row,bar->col);
     for( int i = 0, n = bar->width*bar->height; i < n; ++i ) {
       if( i > 0 && i % bar->width == 0 )
@@ -354,49 +377,65 @@ void bar_update(PBar *bar, float n) {
       else
         fputs(bar->cells[i],stdout);
     }
+    fflush(stdout);
   }
 
-  if( bar->last_n == 0 || n == bar->ntotal || now - bar->last_update > 0.1 ) {
-    set_cursor_pos(bar->row+bar->height-1,bar->col+bar->width*bar_style->char_width);
+  for( int i = 0; i < MAX_N_PCT; ++i ) {
+    PPct *pctind = bar->pct+i;
+    if( pctind->pct_style == None || pctind->pct_style == Text )
+      continue;
+    if( bar->last_n == -1 )
+      pctind->last_update = now;
+    if( bar->last_n != 0 && n != bar->ntotal && now - pctind->last_update <= PCT_UPDATE_TOL )
+      continue;
+    set_cursor_pos(bar->row+bar->height-1-i,bar->col+bar->width*bar_style->char_width);
     float pct = (float)n/bar->ntotal;
-    if( bar->pct_style == Percent )
+    if( pctind->pct_style == Percent )
       fprintf(stdout, " %.2f%%  ", pct*100.0);
-    else if( bar->pct_style == Count )
+    else if( pctind->pct_style == Count )
       fprintf(stdout, " %d / %d  ", (int)n, bar->ntotal);
-    else if( bar->pct_style == ByteCount ) {
-      print_byte_size(bar->cnt, n);
-      fprintf(stdout, " %s / %s  ", bar->cnt, bar->of_cnt);
-    } else if( bar->pct_style == Time ) {
+    else if( pctind->pct_style == ByteCount ) {
+      fputs(" ",stdout);
+      print_byte_size(stdout, n);
+      fputs(" / ",stdout);
+      print_byte_size(stdout, bar->ntotal);
+      fputs("  ",stdout);
+    } else if( pctind->pct_style == Time ) {
       int elapsed = (int)floor(now - bar->start_time);
       int hours = (int)floor(elapsed / 3600);
       int minutes = (elapsed % 3600) / 60;
       int seconds = elapsed % 60;
       fprintf(stdout, " %02d:%02d:%02d  ", hours, minutes, seconds);
-    } else if( bar->pct_style == CountDown ) {
+    } else if( pctind->pct_style == CountDown ) {
       int elapsed = (int)floor(now - bar->start_time);
       int hours = elapsed / 3600;
       int minutes = (elapsed % 3600) / 60;
       int seconds = elapsed % 60;
-      fprintf(stdout, " %02d:%02d:%02d ", hours, minutes, seconds);
+      fprintf(stdout, " %02d:%02d:%02d", hours, minutes, seconds);
       if( pct > 0 ) {
         int estimated = (int)((now - bar->start_time) / pct);
         hours = estimated / 3600;
         minutes = (estimated % 3600) / 60;
         seconds = estimated % 60;
-        fprintf(stdout, " / %02d:%02d:%02d ", hours, minutes, seconds);
+        fprintf(stdout, " / %02d:%02d:%02d  ", hours, minutes, seconds);
+      } else {
+        fputs("  ",stdout);
       }
     }
-    bar->last_update = now;
-    bar->last_pct = pct;
+    pctind->last_update = now;
+    pctind->last_pct = pct;
     fflush(stdout);
   }
   bar->last_n = n >= 0 ? n : 0;
 }
 
 void bar_finish(PBar *bar) {
-  bar->last_update = 0;
+  for( int i = 0; i < MAX_N_PCT; ++i )
+    bar->pct[i].last_update = 0;
   bar_update(bar, bar->last_n);
-  fputc('\n',stdout);
+  set_cursor_pos(bar->row+bar->height-1,0);//bar->col+bar->width*bar->custom_bar_style->char_width);
+  //fputs("\n",stdout);
+  //fflush(stdout);
 #ifdef MSC_VER
   CONSOLE_CURSOR_INFO info;
   info.dwSize = sizeof(info);
