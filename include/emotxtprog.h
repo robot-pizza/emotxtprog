@@ -101,6 +101,7 @@ void bar_init_custom(PBar *bar,
                      PPctStyle pct_style[MAX_N_PCT],
                      CustomBarStyle *custom_bar_style);
 void bar_update(PBar *bar, float n);
+void bar_update_text(PBar *bar, int idx, const char *text);
 void bar_finish(PBar *bar);
 
 float clock_time();

@@ -429,13 +429,19 @@ void bar_update(PBar *bar, float n) {
   bar->last_n = n >= 0 ? n : 0;
 }
 
+void bar_update_text(PBar *bar, int idx, const char *text) {
+  if( idx < 0 || idx >= MAX_N_PCT || bar->pct[idx].pct_style != Text )
+    return;
+  set_cursor_pos(bar->row+bar->height-1-idx,bar->col+bar->width*bar->custom_bar_style->char_width);
+  fputs(text,stdout);
+  fflush(stdout);
+}
+
 void bar_finish(PBar *bar) {
   for( int i = 0; i < MAX_N_PCT; ++i )
     bar->pct[i].last_update = 0;
   bar_update(bar, bar->last_n);
-  set_cursor_pos(bar->row+bar->height-1,0);//bar->col+bar->width*bar->custom_bar_style->char_width);
-  //fputs("\n",stdout);
-  //fflush(stdout);
+  set_cursor_pos(bar->row+bar->height-1,0);
 #ifdef MSC_VER
   CONSOLE_CURSOR_INFO info;
   info.dwSize = sizeof(info);
@@ -443,6 +449,8 @@ void bar_finish(PBar *bar) {
   info.bVisible = FALSE;
   SetConsoleCursorInfo(hConsole,&info);
 #else
+  fputs("\n",stdout);
+  fflush(stdout);
   // show the cursor
   printf("\033[?25h");
 #endif
