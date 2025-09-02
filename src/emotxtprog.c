@@ -73,14 +73,25 @@ static void set_cursor_pos(int row, int col) {
 
 static const char *bsizes[] = {"b","KiB","MiB","GiB","TiB","XiB"};
 
-static void print_byte_size(FILE *fp, int n) {
+const char *printable_byte_size(size_t n0, double *pd) {
   int i = 0;
-  float f = (float)n;
-  while( f > 1024.0 ) {
-    f /= 1024.0;
+  size_t n = n0;
+  double d = n;
+  while( n > 1024 ) {
+    d = n / 1024.0;
+    n >>= 10;
     ++i;
   }
-  fprintf(fp, "%.2f %s", f, bsizes[i]);
+  *pd = d;
+  if( i >= sizeof(bsizes)/sizeof(bsizes[0]) )
+    return "?";
+  return bsizes[i];
+}
+
+static void print_byte_size(FILE *fp, size_t n) {
+  double d = 0.0;
+  const char *suffix = printable_byte_size(n,&d);
+  fprintf(fp, "%.2f %s", d, suffix);
 }
 
 static BarDrop animal_drops[] = {
@@ -432,7 +443,7 @@ void bar_update(PBar *bar, float n) {
 void bar_update_text(PBar *bar, int idx, const char *text) {
   if( idx < 0 || idx >= MAX_N_PCT || bar->pct[idx].pct_style != Text )
     return;
-  set_cursor_pos(bar->row+bar->height-1-idx,bar->col+bar->width*bar->custom_bar_style->char_width);
+  set_cursor_pos(bar->row+bar->height-1-idx,bar->col+bar->width*bar->custom_bar_style->char_width+1);
   fputs(text,stdout);
   fflush(stdout);
 }

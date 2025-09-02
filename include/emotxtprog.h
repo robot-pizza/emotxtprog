@@ -104,6 +104,10 @@ void bar_update(PBar *bar, float n);
 void bar_update_text(PBar *bar, int idx, const char *text);
 void bar_finish(PBar *bar);
 
+// monatonic time, in seconds
 float clock_time();
+// return suffix, pd = n value in suffix units
+// i.e. 1363149 -> "MiB", *pd = 1.3
+const char *printable_byte_size(size_t n, double *pd);
 
 #endif // __emotxtprog_h
