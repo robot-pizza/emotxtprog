@@ -1,4 +1,4 @@
-It's a text progress bar.  It uses emojis when you ask it to.  Written in C. Windows or Linux.
+It's the worlds best text progress bar. Written in C. Windows or Linux.
 
 ![pbar-opt](https://github.com/user-attachments/assets/c59d8887-1b39-4cfb-9ab2-8c835802bd21)
 
